@@ -510,6 +510,7 @@ declare namespace WebDriver {
      */
     export interface SauceLabsCapabilities {
         // Sauce Labs Custom Testing Options
+        name?: string
         tunnelIdentifier?: string
         parentTunnel?: string
         screenResolution?: string

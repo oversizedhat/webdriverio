@@ -1,8 +1,15 @@
+import got from 'got'
 import { Options, DesiredCapabilities } from '../src/types'
 import {
     isSuccessfulResponse, getPrototype, getSessionError,
     getErrorFromResponseBody, CustomRequestError, startWebDriverSession
 } from '../src/utils'
+
+const gotMock = got as unknown as jest.Mock
+
+beforeEach(() => {
+    gotMock.mockClear()
+})
 
 describe('utils', () => {
     it('isSuccessfulResponse', () => {
@@ -217,12 +224,30 @@ describe('utils', () => {
                 .toBe('mockBrowser')
             expect((params.requestedCapabilities as DesiredCapabilities).browserName)
                 .toBe('chrome')
+        })
 
+        it('strips out invalid caps from W3C capabilities', async () => {
+            const params: Options = {
+                hostname: 'localhost',
+                port: 4444,
+                path: '/',
+                protocol: 'http',
+                logLevel: 'warn',
+                capabilities: {
+                    browserName: 'chrome',
+                    platformName: 'Windows 10',
+                    tunnelIdentifier: 'tunnel123',
+                    'sauce:options': { name: 'foobar' }
+                }
+            }
+            await startWebDriverSession(params)
+            expect(gotMock.mock.calls[0][1].json).toMatchSnapshot()
         })
 
         it('should handle sessionRequest error', async () => {
             let error = await startWebDriverSession({
-                logLevel: 'warn'
+                logLevel: 'warn',
+                capabilities: {}
             }).catch((err) => err)
             expect(error.message).toContain('Failed to create session')
         })

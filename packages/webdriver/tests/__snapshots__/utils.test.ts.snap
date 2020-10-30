@@ -1,0 +1,26 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`utils startWebDriverSession strips out invalid caps from W3C capabilities 1`] = `
+Object {
+  "capabilities": Object {
+    "alwaysMatch": Object {
+      "browserName": "chrome",
+      "platformName": "Windows 10",
+      "sauce:options": Object {
+        "name": "foobar",
+      },
+    },
+    "firstMatch": Array [
+      Object {},
+    ],
+  },
+  "desiredCapabilities": Object {
+    "browserName": "chrome",
+    "platformName": "Windows 10",
+    "sauce:options": Object {
+      "name": "foobar",
+    },
+    "tunnelIdentifier": "tunnel123",
+  },
+}
+`;

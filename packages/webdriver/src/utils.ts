@@ -8,7 +8,11 @@ import Protocols from '@wdio/protocols'
 
 import WebDriverRequest, { WebDriverResponse } from './request'
 import command from './command'
-import { Options, JSONWPCommandError, W3CCapabilities, SessionFlags, DesiredCapabilities } from './types'
+import { VALID_CAPABILITIES } from './constants'
+import {
+    Options, JSONWPCommandError, W3CCapabilities, SessionFlags,
+    DesiredCapabilities, Capabilities
+} from './types'
 
 const log = logger('webdriver')
 
@@ -18,6 +22,34 @@ const BROWSER_DRIVER_ERRORS = [
     "'POST /wd/hub/session' was not found.", // safaridriver
     'Command not found' // iedriver
 ]
+
+/**
+ * strips away invalid capabilities
+ * @param cap requested session capabilities
+ */
+function stripInvalidCaps (cap: Capabilities): Capabilities {
+    const returnCap: Capabilities = {}
+    for (let key of Object.keys(cap)) {
+        const capKey = key as keyof Capabilities
+
+        if (
+            /**
+             * check if valid W3C capability
+             */
+            !VALID_CAPABILITIES.includes(key) &&
+            /**
+             * check if valid vendor capability
+             */
+            !key.includes(':')
+        ) {
+            continue
+        }
+
+        (returnCap as any)[capKey] = cap[capKey]
+    }
+
+    return returnCap
+}
 
 /**
  * start browser session with WebDriver protocol
@@ -33,17 +65,20 @@ export async function startWebDriverSession (params: Options): Promise<{ session
         /**
          * in case W3C compliant capabilities are provided
          */
-        ? [params.capabilities, (params.capabilities as W3CCapabilities).alwaysMatch]
+        ? [params.capabilities as W3CCapabilities, (params.capabilities as W3CCapabilities).alwaysMatch]
         /**
          * otherwise assume they passed in jsonwp-style caps (flat object)
          */
-        : [{ alwaysMatch: params.capabilities, firstMatch: [{}] }, params.capabilities]
+        : [{ alwaysMatch: params.capabilities, firstMatch: [{}] } as W3CCapabilities, params.capabilities as DesiredCapabilities]
 
     const sessionRequest = new WebDriverRequest(
         'POST',
         '/session',
         {
-            capabilities: w3cCaps, // W3C compliant
+            capabilities: {
+                alwaysMatch: stripInvalidCaps(w3cCaps.alwaysMatch),
+                firstMatch: w3cCaps.firstMatch.map(stripInvalidCaps)
+            }, // W3C compliant
             desiredCapabilities: jsonwpCaps // JSONWP compliant
         }
     )

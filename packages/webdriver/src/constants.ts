@@ -140,3 +140,16 @@ export const DEFAULTS: Record<Exclude<keyof Options, 'requestedCapabilities'>, O
         type: 'string'
     }
 }
+
+export const VALID_CAPABILITIES = [
+    'browserName',
+    'browserVersion',
+    'platformName',
+    'acceptInsecureCerts',
+    'pageLoadStrategy',
+    'proxy',
+    'setWindowRect',
+    'timeouts',
+    'strictFileInteractability',
+    'unhandledPromptBehavior'
+]
